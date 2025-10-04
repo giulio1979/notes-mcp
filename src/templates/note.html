@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Notes Manager{% endblock %}
+
+{% block content %}
+<div class="metadata">
+    <p><strong>Project:</strong> <a href="{{ url_for('project_view', project_name=project) }}">{{ project }}</a></p>
+    <p><strong>Version:</strong> {{ timestamp }}</p>
+</div>
+
+<div class="deep-link-container">
+    <h3>🔗 Share this note</h3>
+    <div class="deep-link-input">
+        <input type="text" id="note-deep-link" value="{{ deep_link }}" readonly>
+        <button onclick="copyToClipboard('note-deep-link')">📋 Copy Link</button>
+        <span id="note-deep-link-success" class="copy-success">✓ Copied!</span>
+    </div>
+</div>
+
+<h2>{{ title }}</h2>
+<hr>
+<div>
+    {{ content | safe }}
+</div>
+<p><a href="{{ url_for('project_view', project_name=project) }}">← Back to {{ project }}</a></p>
+{% endblock %}

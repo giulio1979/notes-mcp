@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Projects - Notes Manager{% endblock %}
+
+{% block content %}
+<h2>Projects</h2>
+{% if projects %}
+<ul class="project-list">
+    {% for project in projects %}
+    <li>
+        <a href="{{ url_for('project_view', project_name=project) }}">
+            📁 {{ project }}
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>No projects found. Start by creating a note using the MCP server!</p>
+{% endif %}
+{% endblock %}

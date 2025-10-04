@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Search - Notes Manager{% endblock %}
+
+{% block content %}
+<h2>🔍 Search Notes</h2>
+<form method="get" action="{{ url_for('search_view') }}" class="search-form">
+    <input type="text" name="q" placeholder="Search notes..." value="{{ query }}">
+    <button type="submit">Search</button>
+</form>
+
+{% if query %}
+    {% if results %}
+    <h3>Found {{ results|length }} result(s) for "{{ query }}"</h3>
+    {% for result in results %}
+    <div class="search-result">
+        <h3>
+            <a href="{{ url_for('note_view', project_name=result.project, title=result.title) }}">
+                {{ result.title }}
+            </a>
+        </h3>
+        <div class="meta">
+            Project: {{ result.project }} | Relevance: {{ "%.1f"|format(result.score) }}%
+        </div>
+        <div class="excerpt">{{ result.excerpt }}</div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p>No results found for "{{ query }}".</p>
+    {% endif %}
+{% endif %}
+{% endblock %}

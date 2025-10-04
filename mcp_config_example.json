@@ -1,0 +1,14 @@
+{
+  "_comment": "Example MCP Server Configuration - Add this to your MCP client's configuration file",
+  "mcpServers": {
+    "notes-mcp": {
+      "command": "python",
+      "args": [
+        "-m",
+        "src.server"
+      ],
+      "cwd": "d:/Nextcloud/BackupWork/CURRENT/notes-mcp",
+      "env": {}
+    }
+  }
+}
