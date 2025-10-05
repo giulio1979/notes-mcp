@@ -18,7 +18,7 @@
     "_description": "Remote MCP server using HTTP transport (for network access)",
     "servers": {
       "notes": {
-        "url": "http://your-server:8000",
+        "url": "http://your-server:8000/mcp",
         "type": "http"
       }
     }
@@ -28,7 +28,7 @@
     "_description": "Docker-based MCP server (HTTP transport)",
     "servers": {
       "notes": {
-        "url": "http://localhost:8000",
+        "url": "http://localhost:8000/mcp",
         "type": "http"
       }
     }

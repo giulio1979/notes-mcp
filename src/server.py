@@ -17,7 +17,7 @@ from .search import NotesSearcher
 mcp = FastMCP(
     "Notes Manager",
     instructions=(
-        "A server for managing versioned notes organized by projects. "
+        "A server for managing versioned notes organized by projects (best practice, a project is a GIT repository name). "
         "Notes are automatically versioned with timestamps and can be searched using fuzzy matching."
     ),
 )
