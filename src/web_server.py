@@ -222,9 +222,13 @@ def rename_project(project_name):
                       error="New project name cannot be empty"))
     
     try:
-        # Use storage's method to get correct sanitized paths
-        old_path = storage._get_project_dir(project_name)
-        new_path = storage._get_project_dir(new_name)
+        # Manually sanitize paths without creating directories
+        # (can't use _get_project_dir because it creates the directory)
+        safe_old = "".join(c for c in project_name if c.isalnum() or c in (" ", "-", "_")).strip().replace(" ", "_")
+        safe_new = "".join(c for c in new_name if c.isalnum() or c in (" ", "-", "_")).strip().replace(" ", "_")
+        
+        old_path = storage.base_dir / safe_old
+        new_path = storage.base_dir / safe_new
         
         if not old_path.exists():
             return redirect(url_for("index", error=f"Project '{project_name}' not found"))
