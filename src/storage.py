@@ -3,7 +3,7 @@
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any
 import aiofiles
 import asyncio
 
@@ -215,3 +215,51 @@ class NotesStorage:
         """
         async with aiofiles.open(filepath, "r", encoding="utf-8") as f:
             return await f.read()
+
+    async def delete_note(self, project: str, title: str, version: Optional[str] = None) -> dict[str, Any]:
+        """Delete a note or a specific version of a note.
+        
+        Args:
+            project: Project name
+            title: Note title
+            version: Optional version timestamp (ISO format). If None, deletes all versions.
+            
+        Returns:
+            Dictionary with 'deleted' count and 'files' list
+            
+        Raises:
+            FileNotFoundError: If no matching notes found
+        """
+        project_dir = self._get_project_dir(project)
+        safe_title = "".join(c for c in title if c.isalnum() or c in (" ", "-", "_")).strip()
+        safe_title = safe_title.replace(" ", "_")
+        
+        deleted_files = []
+        
+        if version:
+            # Delete specific version
+            safe_version = version.replace(":", "-")
+            filename = f"{safe_title}_{safe_version}.md"
+            filepath = project_dir / filename
+            
+            if not filepath.exists():
+                raise FileNotFoundError(f"Note version not found: {project}/{title} ({version})")
+            
+            await asyncio.to_thread(filepath.unlink)
+            deleted_files.append(str(filepath))
+        else:
+            # Delete all versions
+            pattern = f"{safe_title}_*.md"
+            matching_files = list(project_dir.glob(pattern))
+            
+            if not matching_files:
+                raise FileNotFoundError(f"No notes found with title: {project}/{title}")
+            
+            for filepath in matching_files:
+                await asyncio.to_thread(filepath.unlink)
+                deleted_files.append(str(filepath))
+        
+        return {
+            "deleted": len(deleted_files),
+            "files": deleted_files
+        }

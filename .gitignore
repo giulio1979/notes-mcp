@@ -47,5 +47,8 @@ data/
 .DS_Store
 Thumbs.db
 
+# Generated templates (dynamically created from web_server.py)
+src/templates/
+
 # Logs
 *.log

@@ -107,3 +107,87 @@ def test_sanitize_filename(temp_storage):
     assert "/" not in filename
     assert ":" not in filename
     assert "*" not in filename
+
+
+@pytest.mark.asyncio
+async def test_delete_all_versions(temp_storage):
+    """Test deleting all versions of a note."""
+    project = "Test Project"
+    title = "Note To Delete"
+    
+    # Create multiple versions
+    await temp_storage.store_note(project, title, "Version 1")
+    await temp_storage.store_note(project, title, "Version 2")
+    await temp_storage.store_note(project, title, "Version 3")
+    
+    # Verify they exist
+    notes = temp_storage.list_notes(project)
+    assert any(note["title"] == title for note in notes)
+    
+    # Delete all versions
+    result = await temp_storage.delete_note(project, title)
+    assert result["deleted"] == 3
+    assert len(result["files"]) == 3
+    
+    # Verify they're gone
+    notes = temp_storage.list_notes(project)
+    assert not any(note["title"] == title for note in notes)
+
+
+@pytest.mark.asyncio
+async def test_delete_specific_version(temp_storage):
+    """Test deleting a specific version of a note."""
+    project = "Test Project"
+    title = "Versioned Note"
+    
+    # Create first version
+    await temp_storage.store_note(project, title, "Version 1")
+    content1, version1 = await temp_storage.retrieve_note(project, title)
+    
+    # Create second version
+    await temp_storage.store_note(project, title, "Version 2")
+    content2, version2 = await temp_storage.retrieve_note(project, title)
+    
+    # Delete only the first version
+    result = await temp_storage.delete_note(project, title, version1)
+    assert result["deleted"] == 1
+    
+    # Verify second version still exists
+    content, version = await temp_storage.retrieve_note(project, title)
+    assert content == "Version 2"
+    assert version == version2
+    
+    # Verify first version is gone
+    with pytest.raises(FileNotFoundError):
+        await temp_storage.retrieve_note(project, title, version1)
+
+
+@pytest.mark.asyncio
+async def test_delete_nonexistent_note(temp_storage):
+    """Test deleting a note that doesn't exist."""
+    project = "Test Project"
+    title = "Nonexistent Note"
+    
+    with pytest.raises(FileNotFoundError):
+        await temp_storage.delete_note(project, title)
+
+
+@pytest.mark.asyncio
+async def test_delete_note_leaves_other_notes(temp_storage):
+    """Test that deleting one note doesn't affect others."""
+    project = "Test Project"
+    
+    # Create multiple notes
+    await temp_storage.store_note(project, "Note 1", "Content 1")
+    await temp_storage.store_note(project, "Note 2", "Content 2")
+    await temp_storage.store_note(project, "Note 3", "Content 3")
+    
+    # Delete one note
+    await temp_storage.delete_note(project, "Note 2")
+    
+    # Verify others still exist
+    notes = temp_storage.list_notes(project)
+    titles = [note["title"] for note in notes]
+    assert "Note 1" in titles
+    assert "Note 2" not in titles
+    assert "Note 3" in titles

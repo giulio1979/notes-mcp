@@ -120,7 +120,25 @@ Rebuild the search index for all notes.
 
 **Returns:** Success message with count of indexed notes
 
-### 7. `get_deep_link`
+### 7. `delete_note`
+Delete a note or specific version of a note. ⚠️ **New in v1.1**
+
+**Parameters:**
+- `project` (string): Project/topic name
+- `title` (string): Note title
+- `version` (string, optional): Specific version timestamp. If omitted, deletes ALL versions
+
+**Returns:** Success message with count of deleted files
+
+**Use Cases:**
+- Consolidate multiple notes into one summary, then delete originals
+- Remove outdated or duplicate notes
+- Clean up old versions
+- Agentic workflows for note management
+
+**Warning:** Without the `version` parameter, this deletes ALL versions of the note!
+
+### 8. `get_deep_link`
 Generate a shareable deep link to a project or note.
 
 **Parameters:**

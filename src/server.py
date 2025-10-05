@@ -172,6 +172,47 @@ async def rebuild_index() -> str:
 
 
 @mcp.tool()
+async def delete_note(project: str, title: str, version: str = None) -> str:
+    """Delete a note or a specific version of a note.
+    
+    Use this to remove notes that are no longer needed, have been consolidated,
+    or are outdated. Useful for agentic workflows like summarizing multiple notes
+    into one and cleaning up the originals.
+    
+    Args:
+        project: Project or topic name
+        title: Note title
+        version: Optional version timestamp (ISO format). If not provided, deletes ALL versions of the note.
+        
+    Returns:
+        Success message with count of deleted files
+        
+    Examples:
+        - delete_note("Python Learning", "Old Draft") -> Deletes all versions
+        - delete_note("Python Learning", "AsyncIO", "2024-10-04T12:00:00") -> Deletes specific version
+        
+    Warning:
+        Without a version parameter, this will delete ALL versions of the note!
+    """
+    try:
+        result = await storage.delete_note(project, title, version)
+        
+        # Update search index after deletion
+        await searcher.rebuild_index()
+        
+        if result["deleted"] == 1:
+            return f"Successfully deleted 1 file: {result['files'][0]}"
+        else:
+            files_list = "\n".join(f"  - {f}" for f in result["files"])
+            return f"Successfully deleted {result['deleted']} files:\n{files_list}"
+            
+    except FileNotFoundError as e:
+        return f"Error: {str(e)}"
+    except Exception as e:
+        return f"Error deleting note: {str(e)}"
+
+
+@mcp.tool()
 def get_deep_link(
     project: str, 
     title: str = None, 
