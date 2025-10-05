@@ -32,7 +32,6 @@ services:
       - "5000:5000"
     volumes:
       - ./data:/app/data
-      - ./src:/app/src:ro
     environment:
       - PYTHONUNBUFFERED=1
       - PORT=5000

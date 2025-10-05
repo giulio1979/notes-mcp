@@ -33,6 +33,10 @@ RUN pip install --upgrade pip && \
 # Create data directory
 RUN mkdir -p /app/data
 
+# Create templates directory and generate templates
+RUN mkdir -p /app/src/templates && \
+    python -c "from src.web_server import create_templates; create_templates()"
+
 # Expose ports
 # Port 8000 for MCP server (SSE/HTTP transports)
 # Port 5000 for web interface
