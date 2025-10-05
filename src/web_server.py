@@ -162,7 +162,8 @@ def delete_project(project_name):
     project_name = unquote(project_name)
     
     try:
-        project_path = storage.base_dir / project_name
+        # Use storage's method to get correct sanitized path
+        project_path = storage._get_project_dir(project_name)
         if project_path.exists() and project_path.is_dir():
             import shutil
             shutil.rmtree(project_path)
@@ -184,7 +185,8 @@ def delete_note(project_name, title):
     title = unquote(title)
     
     try:
-        project_path = storage.base_dir / project_name
+        # Use storage's method to get correct sanitized path
+        project_path = storage._get_project_dir(project_name)
         if not project_path.exists():
             return redirect(url_for("project_view", project_name=quote(project_name), 
                           error=f"Project '{project_name}' not found"))
@@ -220,8 +222,9 @@ def rename_project(project_name):
                       error="New project name cannot be empty"))
     
     try:
-        old_path = storage.base_dir / project_name
-        new_path = storage.base_dir / new_name
+        # Use storage's method to get correct sanitized paths
+        old_path = storage._get_project_dir(project_name)
+        new_path = storage._get_project_dir(new_name)
         
         if not old_path.exists():
             return redirect(url_for("index", error=f"Project '{project_name}' not found"))
@@ -254,7 +257,8 @@ def rename_note(project_name, title):
                       error="New note title cannot be empty"))
     
     try:
-        project_path = storage.base_dir / project_name
+        # Use storage's method to get correct sanitized path
+        project_path = storage._get_project_dir(project_name)
         
         if not project_path.exists():
             return redirect(url_for("project_view", project_name=quote(project_name),
@@ -367,8 +371,8 @@ def create_note(project_name):
                           error="Content cannot be empty")
         
         try:
-            # Check if note already exists
-            project_path = storage.base_dir / project_name
+            # Check if note already exists - use storage's method to get correct path
+            project_path = storage._get_project_dir(project_name)
             if project_path.exists():
                 existing = list(project_path.glob(f"{title}_*.md"))
                 if existing:
