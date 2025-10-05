@@ -2,6 +2,7 @@
 
 import asyncio
 import argparse
+import os
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
@@ -226,20 +227,20 @@ def main():
         "--transport",
         type=str,
         default="stdio",
-        choices=["stdio", "sse", "streamable-http"],
+        choices=["stdio", "streamable-http"],
         help="Transport type (default: stdio)",
     )
     parser.add_argument(
         "--port",
         type=int,
-        default=8000,
-        help="Port for SSE or HTTP transport (default: 8000)",
+        default=int(os.environ.get("MCP_PORT", 8000)),
+        help="Port for HTTP transport (default: 8000)",
     )
     parser.add_argument(
         "--host",
         type=str,
-        default="localhost",
-        help="Host for SSE or HTTP transport (default: localhost)",
+        default=os.environ.get("MCP_HOST", "localhost"),
+        help="Host for HTTP transport (default: localhost)",
     )
     
     args = parser.parse_args()
@@ -247,13 +248,17 @@ def main():
     # Build the search index on startup
     asyncio.run(searcher.rebuild_index())
     
-    # Run the server
-    if args.transport == "stdio":
-        mcp.run(transport="stdio")
-    elif args.transport == "sse":
-        mcp.run(transport="sse", port=args.port, host=args.host)
+    # Run the server with specified transport
+    if args.transport == "streamable-http":
+        # For HTTP transport, we need to set up the server manually
+        import uvicorn
+        from mcp.server.streamable_http import create_streamable_http_app
+        
+        app = create_streamable_http_app(mcp._mcp_server)
+        uvicorn.run(app, host=args.host, port=args.port)
     else:
-        mcp.run(transport="streamable-http", port=args.port, host=args.host)
+        # For stdio, use the standard run method
+        mcp.run(transport=args.transport)
 
 
 if __name__ == "__main__":

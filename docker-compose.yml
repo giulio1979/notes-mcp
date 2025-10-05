@@ -1,11 +1,9 @@
-version: '3.8'
-
 services:
-  # MCP Server with HTTP transport
+  # MCP Server with HTTP transport for remote access
   mcp-server:
     build: .
     container_name: notes-mcp-server
-    command: python -m src.server --transport streamable-http --host 0.0.0.0 --port 8000
+    command: python -m src.server --transport streamable-http
     ports:
       - "8000:8000"
     volumes:
@@ -13,15 +11,11 @@ services:
       - ./src:/app/src:ro
     environment:
       - PYTHONUNBUFFERED=1
+      - MCP_HOST=0.0.0.0
+      - MCP_PORT=8000
     restart: unless-stopped
     networks:
       - notes-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000').read()"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
 
   # Web Interface
   web-interface:
@@ -42,30 +36,6 @@ services:
       - mcp-server
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000').read()"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
-
-  # MCP Server with SSE transport (alternative)
-  mcp-server-sse:
-    build: .
-    container_name: notes-mcp-server-sse
-    command: python -m src.server --transport sse --host 0.0.0.0 --port 8001
-    ports:
-      - "8001:8001"
-    volumes:
-      - ./data:/app/data
-      - ./src:/app/src:ro
-    environment:
-      - PYTHONUNBUFFERED=1
-    restart: unless-stopped
-    networks:
-      - notes-network
-    profiles:
-      - sse
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/sse').read()"]
       interval: 30s
       timeout: 10s
       retries: 3

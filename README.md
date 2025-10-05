@@ -18,10 +18,10 @@ A Model Context Protocol (MCP) server for managing versioned notes organized by 
 
 ```bash
 # Start both MCP server and web interface
-docker-compose up -d
+docker compose up -d
 
 # Access web interface at http://localhost:5000
-# MCP server available at http://localhost:8000/mcp
+# MCP server HTTP API at http://localhost:8000
 ```
 
 See [DOCKER.md](DOCKER.md) for detailed Docker deployment guide.
@@ -29,11 +29,11 @@ See [DOCKER.md](DOCKER.md) for detailed Docker deployment guide.
 ### Option 2: Local Installation
 
 ```bash
-# Install dependencies using uv
-uv sync
-
-# Or using pip
+# Install dependencies using pip
 pip install -e .
+
+# Or install from pyproject.toml
+pip install mcp python-dateutil aiofiles rapidfuzz flask markdown uvicorn
 ```
 
 ## Usage
@@ -41,20 +41,35 @@ pip install -e .
 ### Running the MCP Server
 
 ```bash
-# Using stdio transport (default)
-uv run python -m src.server
+# Using stdio transport (default, for local MCP clients)
+python -m src.server
 
-# Using SSE transport
-uv run python -m src.server --transport sse --port 8000
+# Using HTTP transport (for remote access)
+python -m src.server --transport streamable-http --host 0.0.0.0 --port 8000
 ```
 
 ### Running the Web Interface
 
 ```bash
-uv run python -m src.web_server
+python -m src.web_server
 ```
 
 The web interface will be available at `http://localhost:5000`
+
+### Transports
+
+The MCP server supports two transport modes:
+
+1. **stdio** (default): For local MCP clients that communicate via standard input/output
+   ```bash
+   python -m src.server
+   ```
+
+2. **streamable-http**: For remote access via HTTP API
+   ```bash
+   python -m src.server --transport streamable-http --host 0.0.0.0 --port 8000
+   ```
+   Access at: `http://localhost:8000`
 
 ## MCP Tools
 

@@ -28,7 +28,8 @@ RUN pip install --upgrade pip && \
                 aiofiles>=23.2.1 \
                 rapidfuzz>=3.5.2 \
                 flask>=3.0.0 \
-                markdown>=3.5.0
+                markdown>=3.5.0 \
+                uvicorn>=0.27.0
 
 # Create data directory
 RUN mkdir -p /app/data

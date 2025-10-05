@@ -480,12 +480,18 @@ def create_templates():
 {% endblock %}
 """
     
-    # Write templates
-    (templates_dir / "base.html").write_text(base_html, encoding="utf-8")
-    (templates_dir / "index.html").write_text(index_html, encoding="utf-8")
-    (templates_dir / "project.html").write_text(project_html, encoding="utf-8")
-    (templates_dir / "note.html").write_text(note_html, encoding="utf-8")
-    (templates_dir / "search.html").write_text(search_html, encoding="utf-8")
+    # Only write templates if they don't exist (for development)
+    # In Docker, templates are created during build
+    if not (templates_dir / "base.html").exists():
+        (templates_dir / "base.html").write_text(base_html, encoding="utf-8")
+    if not (templates_dir / "index.html").exists():
+        (templates_dir / "index.html").write_text(index_html, encoding="utf-8")
+    if not (templates_dir / "project.html").exists():
+        (templates_dir / "project.html").write_text(project_html, encoding="utf-8")
+    if not (templates_dir / "note.html").exists():
+        (templates_dir / "note.html").write_text(note_html, encoding="utf-8")
+    if not (templates_dir / "search.html").exists():
+        (templates_dir / "search.html").write_text(search_html, encoding="utf-8")
 
 
 def main():
