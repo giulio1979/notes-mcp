@@ -250,11 +250,9 @@ def main():
     
     # Run the server with specified transport
     if args.transport == "streamable-http":
-        # For HTTP transport, we need to set up the server manually
+        # For HTTP transport, use FastMCP's built-in HTTP app
         import uvicorn
-        from mcp.server.streamable_http import create_streamable_http_app
-        
-        app = create_streamable_http_app(mcp._mcp_server)
+        app = mcp.streamable_http_app()
         uvicorn.run(app, host=args.host, port=args.port)
     else:
         # For stdio, use the standard run method

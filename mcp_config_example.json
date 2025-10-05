@@ -1,14 +1,36 @@
 {
-  "_comment": "Example MCP Server Configuration - Add this to your MCP client's configuration file",
-  "mcpServers": {
-    "notes-mcp": {
-      "command": "python",
-      "args": [
-        "-m",
-        "src.server"
-      ],
-      "cwd": "d:/Nextcloud/BackupWork/CURRENT/notes-mcp",
-      "env": {}
+  "_comment": "Example MCP Server Configuration",
+  "_options": "Choose one of the following configurations based on your needs",
+  
+  "local_stdio": {
+    "_description": "Local MCP server using stdio transport (for local MCP clients)",
+    "mcpServers": {
+      "notes-mcp": {
+        "command": "python",
+        "args": ["-m", "src.server"],
+        "cwd": "d:/Nextcloud/BackupWork/CURRENT/notes-mcp",
+        "env": {}
+      }
+    }
+  },
+  
+  "remote_http": {
+    "_description": "Remote MCP server using HTTP transport (for network access)",
+    "servers": {
+      "notes": {
+        "url": "http://your-server:8000",
+        "type": "http"
+      }
+    }
+  },
+  
+  "docker_http": {
+    "_description": "Docker-based MCP server (HTTP transport)",
+    "servers": {
+      "notes": {
+        "url": "http://localhost:8000",
+        "type": "http"
+      }
     }
   }
 }
