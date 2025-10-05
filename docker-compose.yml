@@ -75,7 +75,3 @@ services:
 networks:
   notes-network:
     driver: bridge
-
-volumes:
-  notes-data:
-    driver: local
