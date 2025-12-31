@@ -366,6 +366,18 @@ def main():
         # For HTTP transport, use FastMCP's built-in HTTP app
         import uvicorn
         app = mcp.streamable_http_app()
+        
+        # Fix for "Invalid Host header" when running in Docker/Network
+        # FastMCP/Starlette might enforce allowed_hosts. We want to allow all.
+        try:
+            from starlette.middleware.trustedhost import TrustedHostMiddleware
+            if hasattr(app, 'user_middleware'):
+                for mw in app.user_middleware:
+                    if mw.cls == TrustedHostMiddleware:
+                        mw.options['allowed_hosts'] = ["*"]
+        except Exception as e:
+            print(f"Warning: Could not configure TrustedHostMiddleware: {e}")
+            
         uvicorn.run(app, host=args.host, port=args.port)
     else:
         # For stdio, use the standard run method
