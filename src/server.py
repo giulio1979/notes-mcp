@@ -8,6 +8,7 @@ from typing import Any
 from mcp.server.fastmcp import FastMCP
 from mcp.server.session import ServerSession
 from mcp.server.fastmcp import Context
+from mcp.server.transport_security import TransportSecuritySettings
 
 from .storage import NotesStorage
 from .search import NotesSearcher
@@ -21,6 +22,7 @@ mcp = FastMCP(
         "A server for managing versioned notes organized by topics/projects. The AI Agent has the responsibility to list existing projects/topics and understand if the note is a project specific issue or general environment/personal topic."
         "Notes are automatically versioned with timestamps and can be searched using fuzzy matching or semantic search."
     ),
+    transport_security=TransportSecuritySettings(enable_dns_rebinding_protection=False),
 )
 
 # Initialize storage and search
@@ -366,18 +368,6 @@ def main():
         # For HTTP transport, use FastMCP's built-in HTTP app
         import uvicorn
         app = mcp.streamable_http_app()
-        
-        # Fix for "Invalid Host header" when running in Docker/Network
-        # FastMCP/Starlette might enforce allowed_hosts. We want to allow all.
-        try:
-            from starlette.middleware.trustedhost import TrustedHostMiddleware
-            if hasattr(app, 'user_middleware'):
-                for mw in app.user_middleware:
-                    if mw.cls == TrustedHostMiddleware:
-                        mw.options['allowed_hosts'] = ["*"]
-        except Exception as e:
-            print(f"Warning: Could not configure TrustedHostMiddleware: {e}")
-            
         uvicorn.run(app, host=args.host, port=args.port)
     else:
         # For stdio, use the standard run method
