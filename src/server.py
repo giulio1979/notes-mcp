@@ -11,20 +11,22 @@ from mcp.server.fastmcp import Context
 
 from .storage import NotesStorage
 from .search import NotesSearcher
+from .vector_store import VectorStore
 
 
 # Initialize FastMCP server
 mcp = FastMCP(
     "Notes Manager",
     instructions=(
-        "A server for managing versioned notes organized by projects (best practice, a project is a GIT repository name). "
-        "Notes are automatically versioned with timestamps and can be searched using fuzzy matching."
+        "A server for managing versioned notes organized by topics/projects. The AI Agent has the responsibility to list existing projects/topics and understand if the note is a project specific issue or general environment/personal topic."
+        "Notes are automatically versioned with timestamps and can be searched using fuzzy matching or semantic search."
     ),
 )
 
 # Initialize storage and search
 storage = NotesStorage()
 searcher = NotesSearcher(storage)
+vector_store = VectorStore()
 
 
 @mcp.tool()
@@ -45,6 +47,10 @@ async def store_note(project: str, title: str, content: str) -> str:
         filepath = await storage.store_note(project, title, content)
         # Update search index for this project
         await searcher.rebuild_index()
+        
+        # Update vector store
+        await asyncio.to_thread(vector_store.add_note, project, title, content)
+        
         return f"Note stored successfully at: {filepath}"
     except Exception as e:
         return f"Error storing note: {str(e)}"
@@ -200,6 +206,10 @@ async def delete_note(project: str, title: str, version: str = None) -> str:
         # Update search index after deletion
         await searcher.rebuild_index()
         
+        # Remove from vector store if we are deleting the note (all versions)
+        if version is None:
+             await asyncio.to_thread(vector_store.delete_note, project, title)
+        
         if result["deleted"] == 1:
             return f"Successfully deleted 1 file: {result['files'][0]}"
         else:
@@ -259,6 +269,68 @@ def get_deep_link(
             
     except Exception as e:
         return f"Error generating deep link: {str(e)}"
+
+
+@mcp.tool()
+def search_notes_semantic(query: str, project: str = None) -> str:
+    """Search for notes using semantic similarity (embeddings).
+    
+    This tool finds notes that are semantically similar to the query, even if they don't share exact keywords.
+    
+    Args:
+        query: The search query (e.g., "notes about python configuration")
+        project: Optional project name to limit search scope
+        
+    Returns:
+        A formatted list of matching notes with relevance scores
+    """
+    try:
+        results = vector_store.search(query, project)
+        if not results:
+            return "No matching notes found."
+            
+        output = ["Found semantically similar notes:"]
+        for res in results:
+            metadata = res["metadata"]
+            distance = res["distance"]
+            # ChromaDB default distance is L2 (squared Euclidean). Lower is better.
+            
+            output.append(f"\n## {metadata['title']} (Project: {metadata['project']})")
+            output.append(f"Relevance Distance: {distance:.4f}")
+            output.append(f"Preview: {res['content'][:200]}...")
+            
+        return "\n".join(output)
+    except Exception as e:
+        return f"Error searching notes: {str(e)}"
+
+
+@mcp.tool()
+async def rebuild_vector_index() -> str:
+    """Rebuild the vector search index from all existing notes.
+    
+    This processes all notes and generates new embeddings. 
+    Useful after bulk updates or if the index seems out of sync.
+    
+    Returns:
+        Success message with count of indexed notes
+    """
+    try:
+        await asyncio.to_thread(vector_store.clear_all)
+        
+        projects = storage.list_projects()
+        count = 0
+        
+        for project in projects:
+            notes = storage.list_notes(project)
+            for note in notes:
+                # Retrieve latest content
+                content, _ = await storage.retrieve_note(project, note['title'])
+                await asyncio.to_thread(vector_store.add_note, project, note['title'], content)
+                count += 1
+                
+        return f"Successfully rebuilt vector index with {count} notes."
+    except Exception as e:
+        return f"Error rebuilding index: {str(e)}"
 
 
 def main():

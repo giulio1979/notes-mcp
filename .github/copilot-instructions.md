@@ -1,12 +1,12 @@
 # Workspace Setup Instructions
 
 ## Project Overview
-Python-based MCP server for managing versioned notes organized by projects/topics.
+Python-based Notes MCP for managing versioned notes organized by projects/topics.
 
 ## Progress Tracking
 
 - [x] Verify that the copilot-instructions.md file in the .github directory is created.
-- [x] Clarify Project Requirements - Python MCP server with notes management, versioning, search, and web interface
+- [x] Clarify Project Requirements - Python Notes MCP with notes management, versioning, search, and web interface
 - [x] Scaffold the Project - Created project structure with src/, tests/, pyproject.toml, README.md
 - [x] Customize the Project - Implemented all core functionality (storage, search, server, web interface)
 - [x] Install Required Extensions - N/A for Python project
@@ -51,7 +51,6 @@ Successfully created a fully functional MCP server with the following features:
 - QUICKSTART.md - Getting started guide
 - DEEP_LINKS.md - Deep linking feature guide
 - DOCKER.md - Docker deployment guide
-- example_client.py - Example Python client
 - mcp_config_example.json - MCP client configuration
 
 ### Testing
@@ -59,10 +58,3 @@ Successfully created a fully functional MCP server with the following features:
 - 30 tests passing (storage, search, server, deep links)
 - pytest, pytest-asyncio, pytest-cov configured
 
-The project is ready to use!
-- [ ] Customize the Project
-- [ ] Install Required Extensions
-- [ ] Compile the Project
-- [ ] Create and Run Task
-- [ ] Launch the Project
-- [ ] Ensure Documentation is Complete
